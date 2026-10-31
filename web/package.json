@@ -1,0 +1,20 @@
+{
+  "name": "legalhelp-backend",
+  "version": "1.0.0",
+  "description": "LegalHelp AI-Powered Legal Assistance Backend and Web Client",
+  "main": "dev-server.js",
+  "scripts": {
+    "start": "node dev-server.js",
+    "dev": "node --watch dev-server.js",
+    "test": "node test/backend-test.js"
+  },
+  "dependencies": {
+    "@clerk/backend": "^3.26.5",
+    "@google/generative-ai": "^0.21.0",
+    "busboy": "^1.6.0",
+    "cloudinary": "^2.1.0",
+    "dotenv": "^16.4.5",
+    "mongodb": "^6.5.0",
+    "pdf-parse": "^1.1.1"
+  }
+}

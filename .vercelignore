@@ -1,0 +1,9 @@
+# Monorepo Vercel Ignore File
+# Prevents Vercel from processing or uploading Android artifacts or local files
+android/
+docs/
+.gradle/
+.idea/
+*.apk
+*.log
+

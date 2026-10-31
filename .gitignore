@@ -1,0 +1,76 @@
+# ==============================================================================
+# LegalHelp Monorepo .gitignore
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Android & Gradle
+# ------------------------------------------------------------------------------
+.gradle/
+android/.gradle/
+build/
+android/**/build/
+android/app/build/
+android/data/build/
+android/domain/build/
+android/buildSrc/build/
+
+# Local SDK and keystores
+local.properties
+android/local.properties
+*.jks
+*.keystore
+
+# Android Studio / IntelliJ IDEA
+.idea/
+android/.idea/
+*.iml
+android/**/.iml
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# Build and profiling outputs
+*.apk
+*.aab
+output.json
+captures/
+android/captures/
+.externalNativeBuild/
+android/.externalNativeBuild/
+.cxx/
+android/.cxx/
+*.hprof
+
+# Google Services / Firebase
+google-services.json
+android/**/google-services.json
+
+# ------------------------------------------------------------------------------
+# Web & Backend (Node.js / Vercel)
+# ------------------------------------------------------------------------------
+node_modules/
+web/node_modules/
+dist/
+web/dist/
+.vercel/
+web/.vercel/
+
+# Environment files and secrets
+.env
+.env.local
+.env.*.local
+web/.env
+web/.env.local
+web/.env.*.local
+
+# npm/yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ------------------------------------------------------------------------------
+# OS and Logs
+# ------------------------------------------------------------------------------
+*.log
+.DS_Store
+Thumbs.db

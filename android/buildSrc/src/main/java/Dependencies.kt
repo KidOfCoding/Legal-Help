@@ -1,0 +1,94 @@
+/**
+ * To define plugins
+ */
+object BuildPlugins {
+    val android by lazy { "com.android.tools.build:gradle:${Versions.GRADLE_PLUGIN}" }
+    val kotlin by lazy { "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.KOTLIN}" }
+    val hilt by lazy { "com.google.dagger:hilt-android-gradle-plugin:${Versions.HILT}" }
+}
+
+/**
+ * To defines dependencies
+ */
+object Libs {
+    object AndroidX {
+        val appcompat by lazy { "androidx.appcompat:appcompat:${Versions.APPCOMPAT}" }
+        val dataStore by lazy { "androidx.datastore:datastore-preferences:${Versions.DATASTORE}" }
+        val activityCompose by lazy { "androidx.activity:activity-compose:${Versions.ACTIVITY}" }
+    }
+
+    object Compose {
+        val ui by lazy { "androidx.compose.ui:ui:${Versions.COMPOSE}" }
+        val tooling by lazy { "androidx.compose.ui:ui-tooling:${Versions.COMPOSE}" }
+        val preview by lazy { "androidx.compose.ui:ui-tooling-preview:${Versions.COMPOSE}" }
+        val material by lazy { "androidx.compose.material:material:${Versions.COMPOSE}" }
+        val test by lazy { "androidx.compose.ui:ui-test-junit4:${Versions.COMPOSE}" }
+    }
+
+    object Core {
+        val ktx by lazy { "androidx.core:core-ktx:${Versions.CORE_KTX}" }
+        val splash by lazy { "androidx.core:core-splashscreen:${Versions.SPLASH}" }
+    }
+
+    object Google {
+        val material by lazy { "com.google.android.material:material:${Versions.MATERIAL}" }
+    }
+
+    object Hilt {
+        val android by lazy { "com.google.dagger:hilt-android:${Versions.HILT}" }
+        val androidCompiler by lazy { "com.google.dagger:hilt-android-compiler:${Versions.HILT}" }
+        val workManager by lazy { "androidx.hilt:hilt-work:${Versions.HILT_JETPACK}" }
+        val compiler by lazy { "androidx.hilt:hilt-compiler:${Versions.HILT_JETPACK}" }
+        val navigationCompose by lazy { "androidx.hilt:hilt-navigation-compose:${Versions.HILT_JETPACK}" }
+    }
+
+    object Kotlinx {
+        val coroutines by lazy { "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.COROUTINES}" }
+    }
+
+    object Work {
+        val runtimeKtx by lazy { "androidx.work:work-runtime-ktx:${Versions.WORK}" }
+    }
+
+    object Lifecycle {
+        val viewmodel by lazy { "androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.LIFECYCLE}" }
+        val viewmodelCompose by lazy { "androidx.lifecycle:lifecycle-viewmodel-compose:${Versions.LIFECYCLE}" }
+        val livedata by lazy { "androidx.lifecycle:lifecycle-livedata-ktx:${Versions.LIFECYCLE}" }
+        val runtime by lazy { "androidx.lifecycle:lifecycle-runtime-ktx:${Versions.LIFECYCLE}" }
+        val viewmodelSavedState by lazy { "androidx.lifecycle:lifecycle-viewmodel-savedstate:${Versions.LIFECYCLE}" }
+        val compiler by lazy { "androidx.lifecycle:lifecycle-compiler:${Versions.LIFECYCLE}" }
+        val common by lazy { "androidx.lifecycle:lifecycle-common-java8:${Versions.LIFECYCLE}" }
+    }
+
+    object Navigation {
+        val ui by lazy { "androidx.navigation:navigation-ui-ktx:${Versions.NAVIGATION}" }
+        val compose by lazy { "androidx.navigation:navigation-compose:${Versions.NAVIGATION_COMPOSE}" }
+        val testing by lazy { "androidx.navigation:navigation-testing:${Versions.NAVIGATION}" }
+    }
+
+    object Room {
+        val ktx by lazy { "androidx.room:room-ktx:${Versions.ROOM}" }
+        val runtime by lazy { "androidx.room:room-runtime:${Versions.ROOM}" }
+        val compiler by lazy { "androidx.room:room-compiler:${Versions.ROOM}" }
+        val test by lazy { "androidx.room:room-testing:${Versions.ROOM}" }
+    }
+
+    object Junit {
+        val junit by lazy { "junit:junit:${Versions.JUNIT}" }
+        val test by lazy { "androidx.test.ext:junit:${Versions.JUNIT_TEST}" }
+    }
+
+    object AndroidTest {
+        val espresso by lazy { "androidx.test.espresso:espresso-core:3.4.0" }
+    }
+
+    object Network {
+        val retrofit by lazy { "com.squareup.retrofit2:retrofit:${Versions.RETROFIT}" }
+        val retrofitConverterGson by lazy { "com.squareup.retrofit2:converter-gson:${Versions.RETROFIT}" }
+        val okhttp by lazy { "com.squareup.okhttp3:okhttp:${Versions.OKHTTP}" }
+        val okhttpLoggingInterceptor by lazy { "com.squareup.okhttp3:logging-interceptor:${Versions.OKHTTP}" }
+    }
+
+    val timber by lazy { "com.jakewharton.timber:timber:${Versions.TIMBER}" }
+    val kotlin by lazy { "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.KOTLIN}" }
+}

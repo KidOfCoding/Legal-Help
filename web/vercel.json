@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/conversations/:id",
+      "destination": "/api/conversations/[id]"
+    },
+    {
+      "source": "/api/documents/:id(\\/?.*)",
+      "destination": "/api/documents/[id]"
+    }
+  ]
+}
+

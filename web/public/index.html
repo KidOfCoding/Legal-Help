@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LegalHelp — AI Legal Assistance</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Auth Screen -->
+    <div id="authScreen" class="screen">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="logo-badge">⚖️</div>
+          <h1>LegalHelp</h1>
+          <p>AI Legal Consultation & Document Analysis</p>
+        </div>
+
+        <!-- Mode Toggle Tabs (Sign Up vs Sign In) -->
+        <div class="auth-tabs" id="authTabs">
+          <button type="button" class="auth-tab-btn active" id="tabSignUp" onclick="setAuthMode('SIGN_UP')">
+            Create Account
+          </button>
+          <button type="button" class="auth-tab-btn" id="tabSignIn" onclick="setAuthMode('SIGN_IN')">
+            Sign In
+          </button>
+        </div>
+
+        <!-- Info / Success Alert -->
+        <div id="authInfoAlert" class="auth-alert info" style="display: none;"></div>
+        <!-- Error Alert -->
+        <div id="authErrorAlert" class="auth-alert error" style="display: none;"></div>
+
+        <!-- Step 1 & 2: Sign Up / Sign In Form -->
+        <form id="authMainForm" onsubmit="handleAuthSubmit(event)">
+          <div class="form-group" id="groupEmail">
+            <label for="authEmail">Email Address</label>
+            <input type="email" id="authEmail" required placeholder="you@example.com" autocomplete="email">
+          </div>
+
+          <div class="form-group" id="groupPassword">
+            <label for="authPassword">Password <span id="pwdHint" class="text-muted" style="font-size: 11px;">(min. 8 characters / 15+ characters)</span></label>
+            <input type="password" id="authPassword" required placeholder="••••••••••••" autocomplete="current-password">
+          </div>
+
+          <!-- Step 3: OTP Verification Input -->
+          <div class="form-group" id="groupOtp" style="display: none;">
+            <label for="authOtp">Enter 6-Digit Email Verification Code</label>
+            <input type="text" id="authOtp" maxlength="6" placeholder="123456" inputmode="numeric" style="letter-spacing: 4px; font-size: 18px; text-align: center;">
+            <div style="margin-top: 6px; text-align: right;">
+              <a href="#" onclick="resendOtp(event)" class="link-btn" style="font-size: 11px;">Resend Code</a>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="authSubmitBtn">
+            Send Verification Code
+          </button>
+        </form>
+
+        <!-- Switch Link at Bottom -->
+        <div class="auth-footer-switch" id="authFooterSwitch">
+          <span id="switchText">Already have an account?</span>
+          <button type="button" id="switchBtn" class="link-btn" onclick="toggleAuthMode()">Sign In</button>
+        </div>
+
+        <div class="auth-footer">
+          <p class="text-muted">Secured with Clerk Authentication & MongoDB Atlas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Dashboard Screen -->
+    <div id="mainScreen" class="screen" style="display: none;">
+      <!-- Top Bar -->
+      <header class="top-nav">
+        <div class="nav-brand">
+          <span class="brand-icon">⚖️</span>
+          <span class="brand-name">LegalHelp</span>
+          <span class="badge badge-subtle">Shared Backend</span>
+        </div>
+        
+        <div class="nav-status">
+          <div class="user-pill">
+            <span class="user-email" id="currentUserEmail">user@example.com</span>
+            <span class="badge badge-accent" id="userConvBadge">0/3 Convs</span>
+            <button class="btn btn-sm btn-outline" onclick="handleSignOut()">Sign Out</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- App Body Layout -->
+      <div class="main-layout">
+        <!-- Sidebar: Conversations -->
+        <aside class="sidebar">
+          <div class="sidebar-header">
+            <h3>Conversations</h3>
+            <button class="btn btn-sm btn-primary" onclick="handleNewConversation()" id="newConvBtn">
+              + New
+            </button>
+          </div>
+
+          <div class="conv-limit-banner" id="convLimitBanner">
+            Lifetime quota: <span id="convQuotaText">0/3</span> created
+          </div>
+
+          <div class="conversations-list" id="conversationsList">
+            <div class="empty-state">No conversations yet. Click "+ New" to begin.</div>
+          </div>
+        </aside>
+
+        <!-- Chat & Document Area -->
+        <main class="chat-area" id="chatArea">
+          <!-- Active Conversation Header -->
+          <div class="chat-header" id="chatHeader" style="display: none;">
+            <div class="chat-header-info">
+              <h2 id="activeConvTitle">Conversation Title</h2>
+              <div class="conv-badges" style="margin-top: 4px;">
+                <span class="badge badge-accent" id="convUsageBadge" style="font-size: 11px; padding: 3px 8px;">0/20 Queries · 0/3 Uploads</span>
+              </div>
+            </div>
+            <div class="chat-header-actions">
+              <button class="btn btn-sm btn-outline" onclick="openGalleryModal()" title="View all uploaded documents in this consultation">
+                📁 Document Gallery (<span id="galleryDocsCount">0</span>)
+              </button>
+              <button class="btn btn-sm btn-outline" onclick="handleRenameConversation()">Rename</button>
+              <button class="btn btn-sm btn-danger" onclick="handleDeleteConversation()">Delete</button>
+            </div>
+          </div>
+
+          <!-- Messages Container -->
+          <div class="messages-container" id="messagesContainer">
+            <div class="placeholder-chat">
+              <div class="empty-icon">📄</div>
+              <h3>Select or start a conversation</h3>
+              <p>Ask legal questions or attach PDF/image documents directly in your message.</p>
+            </div>
+          </div>
+
+          <!-- Chat Input Area (With integrated file upload directly inside chat box) -->
+          <div class="chat-input-bar" id="chatInputBar" style="display: none;">
+            <!-- Attached document pill preview inside the input area before sending -->
+            <div id="pendingAttachmentPreview" class="pending-attachment-bar" style="display: none;">
+              <span class="pending-icon">📎</span>
+              <span id="pendingAttachmentName" class="pending-name">document.pdf</span>
+              <span id="pendingAttachmentSize" class="badge badge-subtle">0 KB</span>
+              <button type="button" class="remove-attachment-btn" onclick="clearPendingAttachment()">&times;</button>
+            </div>
+
+            <!-- Upload progress bar -->
+            <div id="uploadProgress" class="upload-progress-bar" style="display: none;">
+              <div class="progress-fill"></div>
+            </div>
+
+            <form onsubmit="handleSendMessage(event)" class="chat-form">
+              <!-- Inline upload button directly in the chat box -->
+              <label class="btn-attach" id="attachBtn" title="Attach PDF or Image to this query">
+                <span>📎</span>
+                <input type="file" id="fileInput" accept=".pdf,image/png,image/jpeg,image/jpg" onchange="handleFileSelected(event)" style="display: none;">
+              </label>
+
+              <div class="input-wrapper">
+                <textarea 
+                  id="queryInput" 
+                  rows="2" 
+                  maxlength="3000" 
+                  placeholder="Ask a legal question or attach a document..." 
+                  oninput="handleCharCount(this)"
+                  onkeydown="handleTextareaKeydown(event)"
+                ></textarea>
+                <div class="input-meta">
+                  <span class="char-count" id="charCount">0 / 3000 chars</span>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary send-btn" id="sendBtn">
+                Send
+              </button>
+            </form>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Document Preview Modal (Direct File Preview) -->
+    <div id="docModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 800px; width: 90%;">
+        <div class="modal-header">
+          <h3 id="docModalTitle">Document Preview</h3>
+          <button class="modal-close" onclick="closeDocModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+          <div class="doc-meta-row" style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <span class="badge" id="docModalType">PDF</span>
+              <span class="text-muted" id="docModalSize" style="margin-left: 8px;">0 KB</span>
+            </div>
+            <a id="docModalCloudLink" href="#" target="_blank" class="btn btn-sm btn-outline">Open Fullscreen ↗</a>
+          </div>
+          <!-- Visual File Viewer (Shows image or PDF preview) -->
+          <div id="docModalViewer" style="width: 100%; min-height: 480px; background: #0b1120; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <img id="docModalImg" src="" alt="Document Preview" style="max-width: 100%; max-height: 520px; object-fit: contain; display: none;" />
+            <iframe id="docModalPdf" src="" style="width: 100%; height: 520px; border: none; display: none;"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversation Document Gallery Modal -->
+    <div id="galleryModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 650px;">
+        <div class="modal-header">
+          <h3>📁 Conversation Document Gallery</h3>
+          <button class="modal-close" onclick="closeGalleryModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted" style="margin-bottom: 14px; font-size: 13px;">
+            All images and documents uploaded in this consultation:
+          </p>
+          <div id="galleryList" class="gallery-container">
+            <div class="empty-state">No documents uploaded yet in this consultation.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
