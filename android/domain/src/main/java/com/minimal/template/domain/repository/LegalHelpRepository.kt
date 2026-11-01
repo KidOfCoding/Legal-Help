@@ -9,8 +9,10 @@ interface LegalHelpRepository {
     suspend fun signIn(email: String, password: String): Result<String> // Returns session token
     suspend fun getProfile(): Result<User>
     suspend fun getConversations(): Result<List<Conversation>>
+    fun getCachedConversations(): List<Conversation>?
     suspend fun createConversation(title: String): Result<Conversation>
     suspend fun getConversationDetails(id: String): Result<Triple<Conversation, List<Message>, List<LegalDocument>>>
+    fun getCachedConversationDetails(id: String): Triple<Conversation, List<Message>, List<LegalDocument>>?
     suspend fun renameConversation(id: String, newTitle: String): Result<Conversation>
     suspend fun deleteConversation(id: String): Result<Unit>
     suspend fun sendChatMessage(conversationId: String, queryText: String, idempotencyKey: String, documentIds: List<String> = emptyList(), attachedDocIds: List<String> = emptyList()): Result<ChatResponse>

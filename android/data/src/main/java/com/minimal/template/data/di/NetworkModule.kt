@@ -1,7 +1,9 @@
 package com.minimal.template.data.di
 
+import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.minimal.template.data.local.MemoryCacheManager
 import com.minimal.template.data.local.SessionManager
 import com.minimal.template.data.remote.AuthInterceptor
 import com.minimal.template.data.remote.LegalHelpApi
@@ -11,12 +13,16 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Cache
+import okhttp3.CacheControl
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -25,7 +31,8 @@ import javax.inject.Singleton
 object NetworkModule {
 
     // Default to loopback which works 100% reliably via 'adb reverse tcp:3000 tcp:3000'
-    const val BASE_URL = "http://127.0.0.1:3000/"
+    // const val BASE_URL = "http://127.0.0.1:3000/"
+    const val BASE_URL = "https://legal-help-web-theta.vercel.app/"
     const val LAN_FALLBACK_IP = "192.168.1.14"
 
     @Provides
@@ -44,9 +51,27 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(
+        @ApplicationContext context: Context,
         authInterceptor: AuthInterceptor,
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient {
+        // 50MB HTTP disk cache for offline and instant repeat query response
+        val httpCacheDirectory = File(context.cacheDir, "http_cache")
+        val cache = Cache(httpCacheDirectory, 50L * 1024L * 1024L)
+
+        // Cache Interceptor: For GET requests, serve stale cache immediately on network jitter
+        val cacheInterceptor = Interceptor { chain ->
+            val request = chain.request()
+            val response = chain.proceed(request)
+            if (request.method.equals("GET", ignoreCase = true)) {
+                response.newBuilder()
+                    .header("Cache-Control", "public, max-age=60, max-stale=86400")
+                    .build()
+            } else {
+                response
+            }
+        }
+
         // Smart host failover: If 127.0.0.1 (USB adb reverse) fails, automatically try 192.168.1.14 (Wi-Fi LAN)
         val hostFailoverInterceptor = Interceptor { chain ->
             val request = chain.request()
@@ -73,7 +98,9 @@ object NetworkModule {
         }
 
         return OkHttpClient.Builder()
+            .cache(cache)
             .addInterceptor(authInterceptor)
+            .addNetworkInterceptor(cacheInterceptor)
             .addInterceptor(hostFailoverInterceptor)
             .addInterceptor(loggingInterceptor)
             .connectTimeout(15, TimeUnit.SECONDS)

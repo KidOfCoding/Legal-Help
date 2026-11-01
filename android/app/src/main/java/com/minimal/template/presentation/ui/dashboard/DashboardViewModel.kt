@@ -32,28 +32,40 @@ class DashboardViewModel @Inject constructor(
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
     init {
+        // Zero-Latency: Instant display of cached conversation list
+        val cached = repository.getCachedConversations()
+        if (!cached.isNullOrEmpty()) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                conversations = cached
+            )
+        }
         loadDashboardData()
     }
 
     fun loadDashboardData() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            if (_uiState.value.conversations.isEmpty()) {
+                _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            }
 
             val profileRes = repository.getProfile()
             val convRes = repository.getConversations()
             val usageRes = repository.getUsageStatus()
 
             val profile = (profileRes as? Result.Success)?.data
-            val convs = (convRes as? Result.Success)?.data ?: emptyList()
+            val convs = (convRes as? Result.Success)?.data ?: _uiState.value.conversations
             val circuit = (usageRes as? Result.Success)?.data?.circuitBreaker ?: CircuitBreakerStatus()
 
-            val error = (convRes as? Result.Error)?.exception?.message
-                ?: (profileRes as? Result.Error)?.exception?.message
+            val error = if (_uiState.value.conversations.isEmpty()) {
+                (convRes as? Result.Error)?.exception?.message
+                    ?: (profileRes as? Result.Error)?.exception?.message
+            } else null
 
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 conversations = convs,
-                userProfile = profile,
+                userProfile = profile ?: _uiState.value.userProfile,
                 circuitBreaker = circuit,
                 errorMessage = error
             )

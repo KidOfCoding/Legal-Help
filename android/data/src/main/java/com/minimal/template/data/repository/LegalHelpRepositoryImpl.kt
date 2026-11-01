@@ -2,6 +2,7 @@ package com.minimal.template.data.repository
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.minimal.template.data.local.MemoryCacheManager
 import com.minimal.template.data.local.SessionManager
 import com.minimal.template.data.remote.LegalHelpApi
 import com.minimal.template.data.remote.dto.*
@@ -21,6 +22,7 @@ import javax.inject.Singleton
 class LegalHelpRepositoryImpl @Inject constructor(
     private val api: LegalHelpApi,
     private val sessionManager: SessionManager,
+    private val memoryCache: MemoryCacheManager,
     private val gson: Gson
 ) : LegalHelpRepository {
 
@@ -95,16 +97,22 @@ class LegalHelpRepositoryImpl @Inject constructor(
     override suspend fun getConversations(): Result<List<Conversation>> {
         return safeApiCall {
             val response = api.getConversations()
-            val list = response.conversations ?: emptyList()
-            list.map { it.toDomain() }
+            val list = response.conversations?.map { it.toDomain() } ?: emptyList()
+            memoryCache.setCachedConversations(list)
+            list
         }
+    }
+
+    override fun getCachedConversations(): List<Conversation>? {
+        return memoryCache.getCachedConversations()
     }
 
     override suspend fun createConversation(title: String): Result<Conversation> {
         return safeApiCall {
             val response = api.createConversation(CreateConversationRequest(title = title))
-            val c = response.conversation ?: throw Exception("Conversation not returned")
-            c.toDomain()
+            val c = response.conversation?.toDomain() ?: throw Exception("Conversation not returned")
+            memoryCache.addOrUpdateConversation(c)
+            c
         }
     }
 
@@ -114,20 +122,29 @@ class LegalHelpRepositoryImpl @Inject constructor(
             val conv = response.conversation?.toDomain() ?: throw Exception("Conversation not found")
             val messages = response.messages?.map { it.toDomain() } ?: emptyList()
             val documents = response.documents?.map { it.toDomain() } ?: emptyList()
-            Triple(conv, messages, documents)
+            val result = Triple(conv, messages, documents)
+            memoryCache.setCachedDetails(id, result)
+            result
         }
+    }
+
+    override fun getCachedConversationDetails(id: String): Triple<Conversation, List<Message>, List<LegalDocument>>? {
+        return memoryCache.getCachedDetails(id)
     }
 
     override suspend fun renameConversation(id: String, newTitle: String): Result<Conversation> {
         return safeApiCall {
             val response = api.renameConversation(id, RenameConversationRequest(newTitle))
-            response.conversation?.toDomain() ?: throw Exception("Failed to rename conversation")
+            val c = response.conversation?.toDomain() ?: throw Exception("Failed to rename conversation")
+            memoryCache.addOrUpdateConversation(c)
+            c
         }
     }
 
     override suspend fun deleteConversation(id: String): Result<Unit> {
         return safeApiCall {
             api.deleteConversation(id)
+            memoryCache.removeConversation(id)
             Unit
         }
     }

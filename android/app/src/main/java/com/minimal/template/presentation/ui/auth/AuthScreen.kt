@@ -145,7 +145,7 @@ fun AuthScreen(
                     OutlinedTextField(
                         value = state.password,
                         onValueChange = { viewModel.onPasswordChanged(it) },
-                        label = { Text(if (state.mode == AuthMode.SIGN_UP) "Password (min 8 chars / 15+)" else "Password") },
+                        label = { Text(if (state.mode == AuthMode.SIGN_UP) "Password (8 to 15 chars)" else "Password") },
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),

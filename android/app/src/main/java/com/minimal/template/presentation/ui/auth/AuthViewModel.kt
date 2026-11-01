@@ -111,8 +111,8 @@ class AuthViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(errorMessage = "Please enter a valid email address.")
             return
         }
-        if (password.length < 8) {
-            _uiState.value = _uiState.value.copy(errorMessage = "Password must be at least 8 characters long.")
+        if (password.length !in 8..15) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Password must be between 8 and 15 characters long.")
             return
         }
 

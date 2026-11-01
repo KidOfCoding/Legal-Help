@@ -40,13 +40,26 @@ class ChatViewModel @Inject constructor(
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
     init {
+        // Zero-Latency: Immediately show cached data if present before background network sync
+        val cached = repository.getCachedConversationDetails(conversationId)
+        if (cached != null) {
+            val (conv, msgs, docs) = cached
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                conversation = conv,
+                messages = msgs,
+                documents = docs
+            )
+        }
         loadConversation()
     }
 
     fun loadConversation() {
         if (conversationId.isBlank()) return
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            if (_uiState.value.conversation == null) {
+                _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            }
             when (val res = repository.getConversationDetails(conversationId)) {
                 is Result.Success -> {
                     val (conv, msgs, docs) = res.data
@@ -60,7 +73,7 @@ class ChatViewModel @Inject constructor(
                 is Result.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = res.exception.message ?: "Failed to load consultation details"
+                        errorMessage = if (_uiState.value.conversation == null) (res.exception.message ?: "Failed to load consultation details") else null
                     )
                 }
                 Result.Loading -> Unit

@@ -161,8 +161,8 @@ async function handleAuthSubmit(e) {
 
   // 2. SIGN UP - STEP 1 (Send OTP)
   if (state.authMode === 'SIGN_UP') {
-    if (password.length < 8) {
-      errorAlert.innerText = 'Password must be at least 8 characters long.';
+    if (password.length < 8 || password.length > 15) {
+      errorAlert.innerText = 'Password must be between 8 and 15 characters long.';
       errorAlert.style.display = 'block';
       return;
     }
