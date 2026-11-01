@@ -1,180 +1,192 @@
-# LegalHelp — AI-Powered Legal Assistance Monorepo
+# LegalHelp ⚖️
 
-LegalHelp is an AI-powered legal assistance platform designed for low-resource environments and serverless cloud deployment. It enables users to upload legal documents (PDFs, images), ask legal questions with strict disclaimers, track lifetime consultation quotas, and inspect real-time system quota health.
 
-This repository is organized as a clean monorepo separating the native Android application, the centralized serverless backend & lightweight web client, and technical documentation.
+
+> **AI-Powered Citizen Legal & Administrative Document Navigator**
+
+## 🛠️ Tech Stack
+
+**Frontend & Mobile**
+
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
+
+**Backend & Database**
+
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
+![MongoDB Atlas](https://img.shields.io/badge/MongoDB_Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+
+**AI, Authentication & Storage**
+
+![Google Gemini](https://img.shields.io/badge/Google_Gemini-8E75C2?style=for-the-badge&logo=googlegemini&logoColor=white)
+![Clerk](https://img.shields.io/badge/Clerk-6C47FF?style=for-the-badge&logo=clerk&logoColor=white)
+![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
 
 ---
 
-## 📁 Repository Structure
+## 🚀 Quick Access
+📱 **Android App** : [Download Latest APK (GitHub Releases)](https://github.com/KidOfCoding/Legal-Help/releases/latest) 
+
+🌐 **Website** : <https://legal-help-web-theta.vercel.app>
+
+---
+
+## 📌 Overview
+
+**LegalHelp** bridges the justice gap for everyday citizens navigating opaque bureaucracies, official rejections, and legal notices. Common citizens frequently encounter intimidating administrative paperwork—ranging from inflated utility bills and arbitrary tenancy termination notices to caste/residency certificate rejections and consumer warranty denials.
+
+LegalHelp allows users to take a photo or upload a PDF of their paperwork. Using native multimodal processing via **Google Gemini**, the platform provides:
+
+* **Plain-Language Clarification:** Demystifies archaic legal jargon into simple, actionable summaries.
+* **Statutory Rights Identification:** Identifies relevant acts, legal entitlements, and civil protections.
+* **Procedural Roadmaps:** Provides step-by-step guidance on where, how, and when to appeal.
+* **Automated Grievance & RTI Drafting:** Auto-generates formal grievance petitions and Right to Information (RTI) drafts ready to submit to relevant authorities.
+
+---
+
+## 🏗️ Architecture & Data Flow
 
 ```text
-LegalHelp/
-├── android/            # Complete Native Android Application (Gradle CLI + ADB)
-│   ├── app/            # Jetpack Compose UI, ViewModels, Theme
-│   ├── data/           # Retrofit API client, DTOs, Auth Interceptor, Repositories
-│   ├── domain/         # Domain models, Use Cases, Repository interfaces
-│   ├── buildSrc/       # Gradle dependency management
-│   ├── gradle/         # Gradle Wrapper files
-│   ├── build.gradle.kts
-│   ├── settings.gradle.kts
-│   ├── gradle.properties
-│   ├── local.properties
-│   ├── gradlew
-│   └── gradlew.bat
-│
-├── web/                # Shared Backend APIs & Lightweight Web Frontend
-│   ├── api/            # Vercel Serverless Functions (REST endpoints)
-│   │   ├── auth/me.js
-│   │   ├── conversations/index.js
-│   │   ├── conversations/[id].js
-│   │   ├── documents/upload.js
-│   │   ├── documents/[id].js
-│   │   ├── usage/status.js
-│   │   └── chat.js
-│   ├── lib/            # Shared business logic & cloud SDK wrappers
-│   │   ├── atomic-usage.js    # Concurrency-safe quota reservation engine
-│   │   ├── quota-manager.js   # Global Gemini quota tracker & 3-state circuit breaker
-│   │   ├── gemini.js          # Google Gemini 1.5 Flash client + disclaimers
-│   │   ├── clerk.js           # Clerk ID & Session token verification
-│   │   ├── mongodb.js         # MongoDB connection pooling & index manager
-│   │   ├── memory-db.js       # Embedded fallback database for local/offline runs
-│   │   ├── cloudinary.js      # Document storage wrapper
-│   │   ├── ocr.js             # PDF text extraction & OCR parser
-│   │   └── config.js          # Unified environment loader
-│   ├── public/         # Minimal Web Frontend Dashboard
-│   │   ├── index.html
-│   │   ├── style.css
-│   │   └── app.js
-│   ├── test/           # Comprehensive backend & concurrency test suite
-│   │   └── backend-test.js
-│   ├── dev-server.js   # Local Node.js development server
-│   ├── package.json    # Backend dependencies & npm scripts
-│   ├── package-lock.json
-│   ├── vercel.json     # Vercel serverless rewrite rules
-│   └── .env.example    # Environment variable template
-│
-├── docs/               # Architecture and Technical Documentation
-│   ├── ARCHITECTURE.md
-│   ├── QUOTA_AND_CIRCUIT_BREAKER.md
-│   └── API_REFERENCE.md
-│
-├── README.md           # Monorepo overview and developer guides
-├── .gitignore          # Multi-project ignore patterns (Android + Node)
-└── .vercelignore       # Excludes Android & docs from Vercel deployments
+       ┌────────────────────────┐         ┌────────────────────────┐
+       │   Android Client       │         │   Web Client (SPA)     │
+       │ (Kotlin / Compose)     │         │ (Vanilla JS / CSS3)    │
+       │ [MemoryCacheManager]   │         │ [Clerk.js SDK]         │
+       └───────────┬────────────┘         └───────────┬────────────┘
+                   │                                  │
+                   │ HTTPS / REST (Multipart & JSON)  │
+                   ▼                                  ▼
+      ┌─────────────────────────────────────────────────────────────┐
+      │              Vercel Serverless API (Node.js)                │
+      │   - Auth Verification & 30-Day Session Minting (Clerk)      │
+      │   - Direct Document Ingestion & Context Routing             │
+      └──────────────┬──────────────────────────────┬───────────────┘
+                     │                              │
+         Asset Upload│                   State Sync │
+                     ▼                              ▼
+      ┌──────────────────────────────┐  ┌───────────────────────────┐
+      │   Cloudinary Media Host      │  │   MongoDB Atlas Cloud     │
+      │   - Raw PDF storage          │  │   - Database: legalease_db│
+      │   - Document photo hosting   │  │   - Multi-Turn Threads    │
+      └──────────────┬───────────────┘  └───────────┬───────────────┘
+                     │                              │
+                     └──────────────┬───────────────┘
+                                    │
+                                    ▼
+      ┌─────────────────────────────────────────────────────────────┐
+      │            Google Gemini Multimodal Engine                  │
+      │        (`gemini-2.5-flash` / `gemini-2.5-flash-lite`)       │
+      │   - Direct inlineData Base64 Ingestion (No 3rd-party OCR)   │
+      │   - Statutory Analysis & Grievance Generation Engine        │
+      └─────────────────────────────┬───────────────────────────────┘
+                                    │
+                                    ▼
+      ┌─────────────────────────────────────────────────────────────┐
+      │       Structured Citizen Remedies & Draft Grievances        │
+      │ (Returned to Client with 0ms Re-render Cached Latency)      │
+      └─────────────────────────────────────────────────────────────┘
+
 ```
 
 ---
 
-## 🛠️ Development Workflows
+## 🚀 Core Features
 
-### 1. Web Frontend & Shared Backend (`web/`)
+* **Multimodal Document Ingestion:** Direct base64 `inlineData` transmission to Google Gemini eliminates fragile external OCR dependencies, reliably parsing scanned documents, handwritten signatures, stamps, and low-resolution camera uploads.
+* **Context-Preserved Multi-Turn Memory:** Multi-turn conversational memory allows follow-up questions directly grounded in previously uploaded documents.
+* **Citizen Legal Simplification:** Automatically cleanses heavy markdown artifacts and delivers structured, concise bullet points and procedural workflows.
+* **Liability & Deadline Detection:** Automatically surfaces statutory limitation periods, appeal windows, and reply deadlines from notice headers.
+* **Automated Grievance & RTI Drafting:** Generates formal grievance redressal letters, RTI applications, and legal replies formatted to municipal and administrative standards.
+* **Zero-Latency Two-Tier Caching:** Combines an in-memory `MemoryCacheManager` with a 50 MB OkHttp disk cache for instantaneous (0ms) screen transitions and offline reliability.
 
-The backend is built for Vercel Serverless Functions. A local zero-dependency development server (`dev-server.js`) mirrors Vercel's routing and serves the static web client from `public/`.
+---
 
-#### Prerequisites
-- Node.js 18+ (tested on Node v24.21.0)
-- npm 9+
+## 🔐 Environment Variables
 
-#### Setup & Local Development
-```powershell
-# 1. Navigate to the web workspace
+Create a `.env` file inside the `web/` directory:
+
+| Variable Name | Required | Description | Where to Obtain |
+| --- | --- | --- | --- |
+| `GEMINI_API_KEY` | **Yes** | API key for Gemini Multimodal API | [Google AI Studio](https://aistudio.google.com/) |
+| `CLERK_PUBLISHABLE_KEY` | **Yes** | Clerk Frontend Publishable Key (`pk_...`) | [Clerk Dashboard](https://dashboard.clerk.com/) |
+| `CLERK_SECRET_KEY` | **Yes** | Clerk Backend Secret Key (`sk_...`) | [Clerk Dashboard](https://dashboard.clerk.com/) |
+| `MONGODB_URI` | **Yes** | MongoDB Atlas connection string (`mongodb+srv://...`) | [MongoDB Atlas](https://www.mongodb.com/atlas) |
+| `CLOUDINARY_CLOUD_NAME` | **Yes** | Cloudinary Cloud Name | [Cloudinary Console](https://cloudinary.com/console) |
+| `CLOUDINARY_API_KEY` | **Yes** | Cloudinary API Key | [Cloudinary Console](https://cloudinary.com/console) |
+| `CLOUDINARY_API_SECRET` | **Yes** | Cloudinary API Secret | [Cloudinary Console](https://cloudinary.com/console) |
+
+---
+
+## 🛠️ Local Setup & Development
+
+### 1. Backend & Web Client
+
+1. Install dependencies:
+```bash
 cd web
-
-# 2. Install dependencies
 npm install
 
-# 3. Create your local environment configuration
-Copy-Item .env.example .env
-# Edit .env with your credentials (MongoDB Atlas, Gemini API, Clerk, Cloudinary)
-
-# 4. Run the automated test suite (verifies atomic quotas & circuit breaker)
-npm test
-
-# 5. Start the local development server (binds to 0.0.0.0:3000)
-npm run dev
 ```
 
-The web dashboard is now accessible at `http://localhost:3000`.
+
+2. Populate `.env` with your API keys.
+3. Start the dev server:
+```bash
+npm run dev
+
+```
+
+
+4. Access the web dashboard at `http://localhost:3000`.
 
 ---
 
-### 2. Android Application (`android/`)
+### 2. Android Client Setup
 
-The Android application is optimized for lightweight development using the Gradle CLI and ADB on physical devices or emulators, without requiring heavy IDE overhead.
+1. Open `android/` and verify `local.properties` contains your Android SDK path:
+```properties
+sdk.dir=C\:\\Users\\<Username>\\AppData\\Local\\Android\\Sdk
 
-#### Prerequisites
-- Android SDK & Command-Line Tools (`C:\Android`)
-- Java JDK 17 LTS
-- Physical Android device connected via USB with USB Debugging enabled (or AVD)
+```
 
-#### Setup & CLI Workflow
-```powershell
-# 1. Navigate to the android workspace
-cd android
 
-# 2. Verify connected device via ADB
-adb devices
-
-# 3. (Optional) Forward port 3000 if testing against localhost
+2. If testing against a local backend on your phone over USB:
+```bash
 adb reverse tcp:3000 tcp:3000
 
-# 4. Build the debug APK using Gradle CLI
-.\gradlew.bat assembleDebug
+```
 
-# 5. Install the APK on the connected device
+
+3. Compile and install directly to your device:
+```bash
+# Windows PowerShell
 .\gradlew.bat installDebug
 
-# 6. Launch the LegalHelp application via ADB
-adb shell am start -n com.minimal.template/.presentation.ui.MainActivity
+# macOS / Linux
+./gradlew installDebug
 
-# 7. View live application logs filtered by app tag
-adb logcat -s LegalHelp OkHttp Retrofit AndroidRuntime
 ```
 
-#### Pointing Android to Local or Production Backend
-In `android/data/src/main/java/com/minimal/template/data/di/NetworkModule.kt`:
-```kotlin
-// For local testing on Wi-Fi:
-const val BASE_URL = "http://192.168.1.14:3000/"
 
-// For local testing via adb reverse:
-// const val BASE_URL = "http://127.0.0.1:3000/"
-
-// For production deployment on Vercel:
-// const val BASE_URL = "https://your-legalhelp-deployment.vercel.app/"
-```
 
 ---
 
-## 🚀 Vercel Deployment Guide
+## 📡 Primary API Endpoints
 
-To deploy the centralized backend and web client to Vercel:
+Base URL: `/api`
 
-### Setting Root Directory to `web`
-1. Push this repository to GitHub / GitLab / Bitbucket.
-2. In the [Vercel Dashboard](https://vercel.com/dashboard):
-   - Click **Add New Project** and import the repository.
-   - In **Project Settings** > **Build & Development Settings**:
-     - Set **Root Directory** to `web`.
-     - Leave Build Command and Output Directory as default (Vercel automatically detects the serverless functions in `api/` and static assets in `public/`).
-3. In **Project Settings** > **Environment Variables**, add the variables defined in `web/.env.example`:
-   - `GEMINI_API_KEY`
-   - `MONGODB_URI`
-   - `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
-   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
-   - Free-tier limits: `FREE_MAX_CONVERSATIONS`, `FREE_MAX_QUERIES_PER_CONVERSATION`, etc.
-   - Global quota limits: `GLOBAL_MAX_REQUESTS_PER_DAY`, `GLOBAL_MAX_REQUESTS_PER_MINUTE`, etc.
-4. Click **Deploy**.
-
-> **Note:** The root `.vercelignore` file explicitly excludes `android/` and `docs/`, guaranteeing that Vercel never attempts to analyze or build the Android project.
+| Endpoint | Method | Payload / Format | Purpose |
+| --- | --- | --- | --- |
+| `/auth/clerk-flow` | `POST` | `{"action", "email", "password", "code"}` | Headless Clerk authentication with OTP dispatch and verification. |
+| `/conversations` | `GET` / `POST` | JSON (`{"title"}`) | Lists all chat threads or initializes a new consultation. |
+| `/documents/upload` | `POST` | `multipart/form-data` (`file`, `conversationId`) | Uploads image or PDF to Cloudinary and saves metadata to MongoDB. |
+| `/chat` | `POST` | `{"conversationId", "message", "attachments"}` | Ingests document data and prompt to stream Gemini legal reasoning and grievance drafts. |
 
 ---
 
-## 🔒 Security & Architecture Guarantees
+## ⚖️ Statutory Legal Disclaimer
 
-- **Single Shared API:** Both the Android app and the Web client interact with the exact same endpoints (`/api/auth/me`, `/api/conversations`, `/api/chat`, `/api/documents/upload`, `/api/usage/status`).
-- **No Client Secrets:** Gemini, MongoDB, Cloudinary, and Clerk Secret Key exist solely within `web/` serverless functions.
-- **Atomic Concurrency Protection:** Quota enforcement uses single-stage conditional MongoDB mutations (`$inc` guarded by `$lt`), preventing race conditions from simultaneous requests.
-- **Global Circuit Breaker:** Protects upstream Gemini API limits with automatic 3-state circuit tripping (`CLOSED` -> `OPEN` -> `HALF_OPEN`) and request cooldowns.
-- **Educational Legal Disclaimer:** Every AI response includes clear, mandatory disclaimers establishing that LegalHelp provides informational legal analysis, not formal attorney representation.
+> **IMPORTANT NOTICE:**
+> **LegalHelp is an automated civic technology and administrative document navigation tool, NOT a law firm, attorney, or certified legal practitioner.**
+> The information, statutory citations, roadmaps, and drafts provided by LegalHelp are for **educational and informational purposes only** and do not constitute formal legal advice, representation, or an attorney-client relationship. Laws and administrative regulations vary significantly across jurisdictions and change frequently. Users must review all generated letters, grievance drafts, and legal assessments with a qualified advocate, legal aid counsel, or competent administrative officer before initiating formal proceedings or signing documents.
